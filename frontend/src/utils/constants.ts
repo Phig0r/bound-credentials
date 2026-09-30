@@ -1,6 +1,6 @@
 /**
  * @file constants.ts
- * @description Centralized constants for the CertifyChain application.
+ * @description Centralized constants for the Bound Credentials application.
  * This file exports non-changing values such as deployed smart contract addresses
  * and utility functions that are used across the application.
 */

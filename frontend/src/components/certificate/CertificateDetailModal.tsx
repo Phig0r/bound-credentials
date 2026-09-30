@@ -30,7 +30,7 @@ export default function CertificateDetailModal({ userType, onClose, data}: Heade
   const STATUS_MAP = ["Active", "Suspended", "Deactivated"];
   const issuerStatus = STATUS_MAP[Number(data?.issuerStatus)]
   const issuerClassName = `${styles.statusCell} ${styles[issuerStatus]}`;
-  
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
 
@@ -43,7 +43,7 @@ export default function CertificateDetailModal({ userType, onClose, data}: Heade
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div 
+      <div
         className={`${styles.modalContainer} ${isSharePanelOpen ? styles.shareViewActive : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -76,7 +76,7 @@ export default function CertificateDetailModal({ userType, onClose, data}: Heade
                 <li><KeyIcon /><strong>Issuer Address:</strong> {shortenAddress(data?.issuerAddress)} </li>
                 <li><CalendarIcon /><strong>Registration Date:</strong> {data?.registrationDate}</li>
                 <li><ActivityIcon /><strong>Issuer Status:</strong> <span className={issuerClassName}>{issuerStatus}</span></li>
-                
+
               </ul>
             </div>
           </main>
@@ -88,8 +88,8 @@ export default function CertificateDetailModal({ userType, onClose, data}: Heade
                 <button className={styles.primaryButton}>Print Report</button>
               )}
               {userType === 'recipient' && (
-                  <button 
-                    className={styles.primaryButton} 
+                  <button
+                    className={styles.primaryButton}
                     onClick={() => setIsSharePanelOpen(true)}
                   >
                     Generate Verification Link
@@ -99,11 +99,11 @@ export default function CertificateDetailModal({ userType, onClose, data}: Heade
             </div>
           </footer>
         </div>
-        
+
         {isSharePanelOpen && (
-          <ShareCredentialPanel 
-            link={verificationLink} 
-            onClose={() => setIsSharePanelOpen(false)} 
+          <ShareCredentialPanel
+            link={verificationLink}
+            onClose={() => setIsSharePanelOpen(false)}
           />
         )}
       </div>

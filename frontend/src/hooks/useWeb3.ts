@@ -1,14 +1,13 @@
+import { errorMessage } from "../utils/errors";
 /**
  * @file useWeb3.ts
  * @description A centralized collection of custom React hooks for interacting with the
- * CertifyChain smart contracts. This file encapsulates all the core Web3 logic,
+ * Bound Credentials smart contracts. This file encapsulates all the core Web3 logic,
  * including wallet connection, contract instance creation, and data fetching.
  * Includes automatic network switching to Sepolia testnet when connecting wallets to ensure compatibility.
  */
 
-"use client";
-
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 
 import { ethers, type BigNumberish, type Signer } from "ethers";
 
@@ -37,19 +36,15 @@ const SEPOLIA_NETWORK = {
 // --- CONTRACT HOOK ---
 
 export function useContract(signer: Signer | null) {
-   let provider: ethers.BrowserProvider;
-   if (typeof window !== 'undefined' && (window as any).ethereum) {
-      provider = new ethers.BrowserProvider((window as any).ethereum);
-   }
-
    const contract = useMemo(() => {
-   const contractRunner = signer ?? provider;
+      const contractRunner = signer ?? (typeof window !== "undefined" && window.ethereum
+         ? new ethers.BrowserProvider(window.ethereum) : null);
       if (!contractRunner) {
          return null;
       }
       return new ethers.Contract(
-         CERTIFY_CHAIN_ADDRESS, 
-         contractAbi, 
+         CERTIFY_CHAIN_ADDRESS,
+         contractAbi,
          contractRunner
       ) as unknown as CertificateNft;
 
@@ -74,27 +69,27 @@ export function useWalletConnect () {
       setToast({ show: true, message, type });
    };
 
-   const handleCloseToast = () => {
-    setToast({ ...closingToast, show: false });
-   };
+   const handleCloseToast = useCallback(() => {
+    setToast(previous => ({ ...previous, show: false }));
+   }, []);
 
-   const checkAndSwitchNetwork = async () => {
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
+   const checkAndSwitchNetwork = useCallback(async () => {
+      if (typeof window === 'undefined' || !window.ethereum) {
          throw new Error("MetaMask is not installed");
       }
 
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const network = await provider.getNetwork();
-      
+
       if (network.chainId !== SEPOLIA_CHAIN_ID) {
          try {
-            await (window as any).ethereum.request({
+            await window.ethereum.request({
                method: 'wallet_switchEthereumChain',
                params: [{ chainId: SEPOLIA_NETWORK.chainId }],
             });
-         } catch (switchError: any) {
-            if (switchError.code === 4902) {
-               await (window as any).ethereum.request({
+         } catch (switchError: unknown) {
+            if (typeof switchError === "object" && switchError !== null && "code" in switchError && switchError.code === 4902) {
+               await window.ethereum.request({
                   method: 'wallet_addEthereumChain',
                   params: [SEPOLIA_NETWORK],
                });
@@ -103,22 +98,22 @@ export function useWalletConnect () {
             }
          }
       }
-   };
+   }, []);
 
    const connectWallet = useCallback( async()=>{
       try{
-         if (typeof window === 'undefined' || !(window as any).ethereum) {
+         if (typeof window === 'undefined' || !window.ethereum) {
             showToast("Please install MetaMask to connect your wallet", 'error');
             return;
          }
 
-         const provider = new ethers.BrowserProvider((window as any).ethereum);
+         const provider = new ethers.BrowserProvider(window.ethereum);
 
          showToast("Switching to Sepolia testnet...", 'info');
          await checkAndSwitchNetwork();
 
          await provider.send("eth_requestAccounts", []);
-         
+
          const currentSigner = await provider.getSigner();
          const currentWallet = await currentSigner.getAddress()
 
@@ -126,15 +121,20 @@ export function useWalletConnect () {
          setWalletAddress(currentWallet);
          handleCloseToast();
 
-         (window as any).ethereum.on('chainChanged', () => {
-            window.location.reload();
-         });
 
-      } catch(error: any) {
+
+      } catch(error: unknown) {
          console.log("Couldn't connect to the wallet", error);
-         showToast(error.message || "Couldn't connect to the wallet", 'error');
+         showToast(errorMessage(error, "Couldn't connect to the wallet"), 'error');
       }
-   },[]);
+   },[checkAndSwitchNetwork, handleCloseToast]);
+
+   useEffect(() => {
+      const provider = window.ethereum;
+      const reload = () => window.location.reload();
+      provider?.on?.('chainChanged', reload);
+      return () => provider?.removeListener?.('chainChanged', reload);
+   }, []);
 
    const disconnectWallet = async ()=>{
       showToast("Disconnecting wallet...", 'info');
@@ -152,18 +152,18 @@ export function useWalletConnect () {
 
 export function useCertificateData(contract: CertificateNft | null | undefined) {
    const [data, setData] = useState<CertificateData | null>(null);
-   const [isLoading, setIsLoading] = useState(false); 
+   const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
-   
+
    const fetchAllDetails = async (_tokenId: BigNumberish | null) => {
       if (!contract || _tokenId == null) {
          setError(new Error("Contract not ready or Token ID is missing."));
          return;
       }
-      
+
       setIsLoading(true);
-      setError(null); 
-      setData(null); 
+      setError(null);
+      setData(null);
 
       try {
          const certifDetail = await contract.getCertificateDetails(_tokenId);
@@ -171,13 +171,13 @@ export function useCertificateData(contract: CertificateNft | null | undefined) 
          if (certifDetail.issuerAddress === "0x0000000000000000000000000000000000000000") {
             throw new Error(`A certificate with ID #${_tokenId} could not be found.`);
          }
-         
+
          const issuerDetail = await contract.issuers(certifDetail.issuerAddress);
          const ownerAddress = await contract.ownerOf(_tokenId);
 
          const issueDate = (new Date(Number(certifDetail.issueDate) * 1000)).toLocaleDateString();
          const registrationDate = (new Date(Number(issuerDetail.registrationDate) * 1000)).toLocaleDateString();
-        
+
          setData({
             // --- certificate data ---
             courseTitle: certifDetail.courseTitle,
@@ -248,10 +248,9 @@ export function useDemoRole(signer: Signer | null) {
         window.location.reload();
       }, 2000);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to change role:", error);
-      const errorMessage = error.reason || "Transaction failed or was rejected.";
-      showToast(errorMessage, "error");
+      showToast(errorMessage(error, "Transaction failed or was rejected."), "error");
     } finally {
       setIsUpdating(false);
     }

@@ -26,7 +26,7 @@ describe("CertificateNft", function(){
    });
 
       /// --- Constructor Tests ---
-      
+
    it("Should grant the DEFAULT_ADMIN_ROLE to the deployer", async function(){
       const defaultAdminRole = await certificateNft.DEFAULT_ADMIN_ROLE();
       expect(
@@ -97,7 +97,7 @@ describe("CertificateNft", function(){
    it("Should revert when attempting to update a permanently deactivated issuer", async function(){
       await certificateNft.addIssuer(issuer.address, "Test University", "test.edu");
       await certificateNft.updateIssuerStatus(issuer.address,status.Deactivated);
-      
+
       await expect(
          certificateNft.updateIssuerStatus(issuer.address,status.Active)
       ).to.revertedWith("Certify: Issuer is permanently deactivated");
@@ -106,7 +106,7 @@ describe("CertificateNft", function(){
    it("Should successfully update the issuer's status", async function(){
       await certificateNft.addIssuer(issuer.address, "Test University", "test.edu");
       await certificateNft.updateIssuerStatus(issuer.address,status.Suspended);
-      
+
       const issuerInfo = await certificateNft.issuers(issuer.address);
 
       expect(issuerInfo.status).to.equal(status.Suspended);
@@ -115,7 +115,7 @@ describe("CertificateNft", function(){
    it("Should revoke the ISSUER_ROLE when the status is set to Deactivated", async function(){
       await certificateNft.addIssuer(issuer.address, "Test University", "test.edu");
       await certificateNft.updateIssuerStatus(issuer.address,status.Deactivated);
-      
+
       const issuerRole = await certificateNft.ISSUER_ROLE();
 
       expect(
@@ -125,7 +125,7 @@ describe("CertificateNft", function(){
 
    it("Should emit an IssuerRoleRevoked event upon deactivation", async function(){
       await certificateNft.addIssuer(issuer.address, "Test University", "test.edu");
-      
+
       await expect(
          certificateNft.updateIssuerStatus(issuer.address,status.Deactivated)
       ).to.emit(certificateNft, "IssuerRoleRevoked")
@@ -137,7 +137,7 @@ describe("CertificateNft", function(){
       const newStatus = status.Suspended;
 
       await certificateNft.addIssuer(issuer.address, "Test University", "test.edu");
-      
+
 
       await  expect(
          certificateNft.updateIssuerStatus(issuer.address,newStatus)

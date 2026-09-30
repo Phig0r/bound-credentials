@@ -14,11 +14,9 @@ import type { HeaderProps, ToastState, ToastType} from '../types/types';
 import Header from '../components/shared/Header';
 import Toast from '../components/shared/Toast';
 export default function EmptyState({ signer, userAddress, onLogout}: HeaderProps) {
-  if(!signer){
-    return
-  }
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const handModalOpen = ()=>{
     setIsModalOpen(true);
   }
@@ -39,9 +37,11 @@ export default function EmptyState({ signer, userAddress, onLogout}: HeaderProps
       setToast({ ...toast, show: false });
     };
 
+  if (!signer) return null;
+
   return (
     <>
-     
+
      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast}/>
       <Header theme="dark" isConnected={true} userAddress={userAddress} onLogout={onLogout}/>
       <div className={styles.emptyStateContainer}>
@@ -53,15 +53,15 @@ export default function EmptyState({ signer, userAddress, onLogout}: HeaderProps
           Certificates issued to your wallet address will appear here automatically.
         </p>
         <p className={styles.emptyStateText}>
-          To explore the administrative features for this demo, you can grant your wallet a temporary role below.
+          To explore the administrative features for this demo, you can grant your wallet a demo role below.
         </p>
         <button className={styles.demoButton} onClick={handModalOpen}>
           Get a Demo Role
         </button>
       </div>
 
-      <GetDemoRoleModal 
-        isOpen={isModalOpen} 
+      <GetDemoRoleModal
+        isOpen={isModalOpen}
         onClose={handModalClose}
         signer={signer}
         showToast={showToast}

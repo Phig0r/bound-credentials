@@ -55,7 +55,7 @@
 .gridRow {
   display: grid;
   /* Adjusted for 6 columns */
-  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr; 
+  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr;
   gap: 1rem;
   align-items: center;
   padding: 1rem 1.5rem;

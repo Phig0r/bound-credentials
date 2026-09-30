@@ -29,7 +29,7 @@ const Toast: React.FC<ToastProps> = ({ show, message, type, onClose }) => {
       setCurrentToast({ message, type });
     }
   }, [show, message, type]);
- 
+
   const toastClasses = `${styles.toastContainer} ${show ? styles.show : ''} ${styles[currentToast.type]}`;
 
   return (

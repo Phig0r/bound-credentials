@@ -25,7 +25,7 @@ export default function AdminDashboard({
 }: HeaderProps) {
 
   const etherscanBaseUrl = `https://sepolia.etherscan.io`;
-  
+
   if(stats && recentActivity){
   return (
     <div className={styles.dashboardContainer}>
@@ -43,7 +43,7 @@ export default function AdminDashboard({
           <span className={styles.statValue}>{stats.totalCertificates.toLocaleString()}</span>
           <span className={styles.statLabel}>Certificates on-chain</span>
         </div>
-        
+
         <div className={styles.statCard}>
           <AlertTriangleIcon className={`${styles.statIcon} ${styles.warningIcon}`} />
           <span className={styles.statValue}>{suspendedIssuers}</span>
@@ -60,7 +60,7 @@ export default function AdminDashboard({
           <ul className={styles.statusList}>
             <li>
               <span>Network</span>
-   
+
               <span className={styles.statusValue}>
                 <span className={styles.statusDot}></span>
                 {stats.networkName}
@@ -73,7 +73,7 @@ export default function AdminDashboard({
                 <LinkIcon className={styles.copyIcon} />
               </a>
             </li>
-            
+
             <li>
               <span>Current Block</span>
               <span className={styles.statusValue}>

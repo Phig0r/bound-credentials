@@ -1,152 +1,133 @@
-# Soulbound Tokens for Identity-Bound Verifiable Credentials
-### A Protocol for Non-Transferable Digital Asset and Identity Binding.
+# Bound Credentials
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)  
-![Status](https://img.shields.io/badge/status-Demo_Pending_Deployment-important.svg)
+**Issue and inspect wallet-bound certificates on Ethereum Sepolia.**
 
-A blockchain-based platform for issuing and verifying academic and professional credentials as **non-transferable NFTs (Soulbound Tokens)**. This system addresses the inefficiencies, fraud risks, and lack of ownership in traditional credential verification by creating a single, immutable source of truth that is globally accessible and mathematically secure.
+A transferable token can change owners without the underlying qualification changing. Bound Credentials explores a narrower question: **what can a non-transferable credential establish about a wallet, and what still depends on the issuer and enrollment process?**
 
----
+The prototype records issuer-created certificates and rejects token transfers. It does not prove a unique person, a real qualification, or an institution's legitimacy. The public demo deliberately lets visitors request privileged roles.
 
-## Live Demo & Documentation
+## Review guide
 
-> **Note:** The demo functionality will be available once the hosted UI is deployed.
-> You can still explore the complete flow by running the project locally.
+| Resource | Start here |
+| --- | --- |
+| Live application | [Try the Sepolia demo](https://sbt-verifiable-credentials.vercel.app/) |
+| Technical report | [Technical report (PDF)](research/Bound-Credentials-Technical-Report.pdf), with [scope and currency notes](research/README.md) |
+| Architecture | [Vertical component diagram](#architecture) |
+| Tests | [Commands and evidence](#tests-and-evidence) |
+| Trust boundary | [What the system does not guarantee](#what-the-system-does-not-guarantee) |
 
-- **Live Application:** *TBD*
-- **Full Technical Documentation:** *[documentation file](./documentation/Documentation.pdf)*
+The application was previously named CertifyChain. The existing token name, deployed contract addresses, and demo URL remain unchanged; this repository is now `bound-credentials`.
 
----
+## Problem and design
 
-## Problem Statement
+Certificates need an inspectable issuer, an intended recipient, and a record that cannot simply be transferred to someone else. This implementation combines an ERC-721 token with role-controlled issuance and an issuer status registry. The interesting boundary is between a contract-enforced record and the real-world claim behind it.
 
-Traditional credential verification systems suffer from:
+## Architecture
 
-- **Fraud & Forgery:** Physical and digital certificates are easily counterfeited.
-- **Inefficiency:** Manual verification can take days or weeks.
-- **Lack of Ownership:** Credentials are stored in institutional silos, not truly owned by recipients.
-
-This project solves these issues by creating a secure, decentralized, and transparent system that enables whitelisted institutions to issue on-chain, non-transferable certificates that can be verified instantly and permissionlessly by any third party.
-
----
-
-## Key Features
-
-- **On-Chain Credential Issuance** – Whitelisted institutions can issue immutable, on-chain certificates with verifiable metadata.
-- **Soulbound Tokens (SBTs)** – Certificates are implemented as non-transferable NFTs, ensuring they remain permanently tied to the recipient.
-- **Instant Verification** – A public-facing UI allows anyone to query the blockchain for a certificate's authenticity.
-- **Role-Based Access Control:** A secure, two-tiered administrative system (`DEFAULT_ADMIN_ROLE`, `ADMIN_ROLE`, `ISSUER_ROLE`) governs the platform.
-- **Secure Demo Testing** – A `DemoRoleFaucet` contract allows safe, temporary role assignments for evaluation without compromising the main contract's security.
-
----
-
-## Tech Stack
-
-| Layer          | Technologies |
-|----------------|--------------|
-| Blockchain     | Solidity, Hardhat, Ethers.js, OpenZeppelin Contracts |
-| Frontend       | React, TypeScript, Vite, CSS Modules |
-| Testing        | Chai, Hardhat Test Helpers, Solidity Coverage, Hardhat Gas Reporter |
-| Deployment     | Hardhat Ignition (Smart Contracts) |
-
----
-
-## Project Structure
-
-* `/smart-contracts`: The Hardhat project containing all Solidity contracts, a comprehensive test suite, and deployment scripts.
-* `/frontend`: The Vite + React web application for interacting with the smart contracts.
-* `/documentation`: Contains the complete technical project report (`Documentation.pdf`), all system diagrams (`.svg` files), UI mockups.
-
----
-
-## Installation & Local Setup
-To run this project locally, follow these steps.
-
-### Prerequisites
-- Node.js (v18+)
-- Yarn or npm
-- MetaMask browser extension *(preferred)*
-
-### Steps to Run the Project Locally (Using Existing Deployed Contracts)
-
-#### 1. Clone the repository
-```bash
-git clone https://github.com/Phig0r/decentralized-certificate-verification-system
-```
-#### 2. Navigate to the frontend directory
-```bash
-cd decentralized-certificate-verification-system/frontend
+```mermaid
+flowchart TD
+    Visitor[Visitor with a browser wallet]
+    UI[React and TypeScript frontend]
+    RPC[Wallet provider / Sepolia RPC]
+    Registry[CertificateNft contract]
+    Roles[AccessControl roles and issuer status]
+    Records[Public certificate records and token ownership]
+    Faucet[DemoRoleFaucet: public role requests]
+    Trust[Off-chain trust: issuer enrollment and truth of qualifications]
+    Visitor --> UI
+    UI --> RPC
+    RPC --> Registry
+    Registry --> Roles
+    Registry --> Records
+    RPC --> Faucet
+    Faucet --> Roles
+    Trust -. not established by the contract .-> Registry
 ```
 
-#### 3. Install frontend dependencies
-```bash
-npm install
-```
+There is no application backend or private database. `frontend/` talks to the contracts through ethers and an injected wallet provider. `smart-contracts/` contains two contracts, their tests, and an Ignition deployment module.
 
+## Protocol flow
 
-#### 4. Start the development server
-```bash
+1. **Enroll:** an administrator calls `addIssuer` to record institution details and grant the issuer role. This is an administrative assertion, not independent accreditation.
+2. **Issue:** an address with `ISSUER_ROLE` and Active status records a recipient name, wallet, course title, and timestamp, then mints a token.
+3. **Inspect:** a verifier looks up the token ID, certificate details, current owner, and issuer record.
+4. **Restrict:** the ERC-721 `_update` override rejects movement of an existing token. A wallet key can still be shared, sold, or compromised.
+5. **Manage:** an administrator can suspend an issuer or deactivate it through the status workflow. These changes do not delete previously issued certificates.
+
+The demo faucet is a separate shortcut: anyone can request admin or issuer privileges. Requesting an issuer role directly does not create a registered institution record. Roles do not expire automatically.
+
+## Threat model
+
+Consider an unauthorized caller, a dishonest or compromised issuer, a malicious administrator, and a user sharing or losing a wallet key. Contract checks constrain calls and token transfers, but administrators govern admission and issuers supply the claim content. A compromised frontend or RPC provider can mislead a viewer. The public demo intentionally weakens admission by granting roles through its faucet.
+
+## What the system does not guarantee
+
+- **No proof of identity or qualification.** Wallet control is not a unique person; on-chain data does not establish that a course was completed.
+- **No privacy.** Recipient names, course titles, addresses, timestamps, and issuer records are public. Use fictitious data in the demo.
+- **No selective disclosure or W3C Verifiable Credentials implementation.** This is an ERC-721 prototype, not a standards-compliant credential wallet.
+- **No individual certificate revocation, expiry, correction, or wallet recovery workflow.** Issuer status changes do not erase existing records.
+- **No strict enrollment invariant.** Generic role grants, including the faucet, can give an unregistered address `ISSUER_ROLE`; the default enum value is Active. Therefore the issuance check does not independently require a completed issuer record.
+- **No irreversible governance guarantee.** Deactivation is terminal in `updateIssuerStatus`, but privileged role management remains separate. Do not equate the status workflow with the entire authorization model.
+- **No production security claim.** Tests exercise selected cases. The contracts are not presented as audited, and the public role faucet is unsuitable for credential admission in production.
+
+## Technologies
+
+Solidity 0.8.28, OpenZeppelin Contracts 5, Hardhat 2, ethers 6, React 19, TypeScript, Vite 7, MetaMask-compatible wallet access, and Ethereum Sepolia. Package lockfiles record dependency versions.
+
+## Run locally
+
+Use Node.js 22.12 or newer within a supported Node release, npm, and a browser wallet. See each package README for its scope.
+
+```sh
+git clone https://github.com/Phig0r/bound-credentials.git
+cd bound-credentials/frontend
+npm ci
 npm run dev
 ```
-### (Optional) Deploy and Test Your Own Smart Contracts
-If you want to run tests or deploy a new instance of the smart contracts:
 
-#### 1. Navigate to the smart-contracts folder
-```bash
-cd decentralized-certificate-verification-system/smart-contracts
+The repository is private; cloning requires access. The hosted demo and the portfolio's PDF copies can be reviewed independently.
+
+Connect your wallet to Sepolia. The frontend uses addresses in [`constants.ts`](frontend/src/utils/constants.ts); it does not need a server or frontend secret. Reads use the wallet's provider. Writes require test ETH and a confirmed transaction.
+
+## Tests and evidence
+
+From the repository root:
+
+```sh
+cd smart-contracts
+npm ci
+npm test
 ```
 
-#### 2. Install dependencies
-```bash
-npm install
-```
-#### 3. Create a .env file in the smart-contracts folder with
-```env
-PRIVATE_KEY=<your-private-key>
-RPC_URL=<your-ethereum-rpc-url>
-```
-#### 4. Run the tests
-```bash
-npx hardhat test
+To run against existing local compiler artifacts without compiling:
+
+```sh
+npm run test:existing
 ```
 
-#### 5. Deploy your own contract (example for Sepolia testnet)
-```bash
-npx hardhat run ignition/modules/DeployCertify.ts --network sepolia
-```
+For coverage, run `npm run coverage`. A coverage percentage is not claimed here unless a current run is recorded. The current run on 2026-09-30 passed **23 contract tests** (18 certificate tests and 5 faucet tests), using Solidity 0.8.28 on Hardhat's local network. The suites cover issuer administration, issuance, lookup, transfer rejection, and faucet role changes. Passing tests do not establish complete authorization coverage or real-world credential validity.
 
----
+Frontend checks, from `frontend/`: `npm run build` and `npm run lint`. There is no dedicated automated frontend test suite. The build checks types and bundling, not wallet behavior.
 
-## Demo Instructions
+### Manual demo procedure
 
-This project includes a Demo Role Faucet for a seamless testing experience.
+1. Connect to Sepolia and use a disposable test wallet.
+2. Request an admin role, then enroll an issuer using fictitious institution data.
+3. Use that issuer wallet to issue a certificate to a different test wallet.
+4. Look up the token ID and compare the displayed owner, issuer, and course details with the transaction.
+5. Attempt a token transfer through a contract client; it should revert.
+6. Suspend the issuer and confirm that new issuance fails. Previously issued records remain readable.
 
-* **1. Connect Your Wallet:** Open the application and click **"Connect Wallet"**. You will start as a Recipient.
-* **2. Request a Demo Role:** Click **"Get a Demo Role"**.
+## Deployment and source map
 
-* **3. Choose a Role:**
-  - **Become an Issuer**  – To access the certificate minting interface.
-  - **Become an Admin** – To access the governance dashboard and manage institutions.
-  - **Become a Recipient** – To revoke any special roles and return to the default view.
-* **4. Explore:** After approving the transaction, the page will reload with your new interface.
+| Component | Source / address |
+| --- | --- |
+| Main contract | [`CertificateNft.sol`](smart-contracts/contracts/CertificateNft.sol) |
+| Demo privileges | [`DemoRoleFaucet.sol`](smart-contracts/contracts/DemoRoleFaucet.sol) |
+| Sepolia certificate | `0xc009f31C9f68c4d141091350D3aDDb77AB40d4F3` |
+| Sepolia faucet | `0x5fA4f02152d33ab9FE683574525b89D024Ae9c1f` |
+| Frontend | [`frontend/README.md`](frontend/README.md) |
+| Tests and deployment | [`smart-contracts/README.md`](smart-contracts/README.md) |
+| Diagrams and mockups | [`documentation/README.md`](documentation/README.md) |
 
----
-
-## Sepolia Testnet ETH for Testing
-
-To interact with the smart contracts on the Sepolia testnet, you will need Sepolia ETH in your MetaMask wallet. You can request free testnet ETH from the official Google Cloud Faucet:
-
-**[Request Sepolia ETH](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)**
-
-> Note: You must have a Google account and provide your Sepolia wallet address.
-
----
-
-## Deployed Contract Addresses (Sepolia Testnet)
-
-| Contract          | Address	                                      | Etherscan Link|
-|-------------------|-----------------------------------------------|---------------|
-|**CertificateNft** |	`0xc009f31C9f68c4d141091350D3aDDb77AB40d4F3`	| [Sepolia Etherscan Link](https://sepolia.etherscan.io/address/0xc009f31c9f68c4d141091350d3addb77ab40d4f3) |
-|**DemoRoleFaucet**	| `0x5fA4f02152d33ab9FE683574525b89D024Ae9c1f`	| [Sepolia Etherscan Link](https://sepolia.etherscan.io/address/0x5fA4f02152d33ab9FE683574525b89D024Ae9c1f) |
-
-
+Public Ignition address records and journals are retained for provenance. Reproducible compiler artifacts, local coverage output, dependencies, and secrets are excluded from Git. Do not assume a recorded deployment and a changed local contract are byte-for-byte identical.

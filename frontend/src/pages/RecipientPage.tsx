@@ -6,7 +6,7 @@
  * for displaying the certificate detail modal.
 */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Header from "../components/shared/Header";
 import Toast from "../components/shared/Toast";
@@ -27,13 +27,13 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
   const {data , fetchAllDetails} = useCertificateData(contract);
   const wait = (milliseconds: number | undefined) => new Promise(resolve => setTimeout(resolve, milliseconds));
-  
+
   const showToast = (message: string, type: ToastType) => {
     setToast({ show: true, message, type });
   };
-  const handleCloseToast = () => {
-    setToast({ ...toast, show: false });
-  };
+  const handleCloseToast = useCallback(() => {
+    setToast(previous => ({ ...previous, show: false }));
+  }, []);
 
   useEffect(() => {
     const fetchUserCertificates = async () => {
@@ -44,7 +44,7 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
 
       setIsLoading(true);
       showToast("Loading your certificates from the blockchain...", 'info');
-      
+
       try {
         const events = await contract.queryFilter(contract.filters.CertificateIssued(), 0, "latest");
         const certificatePromises = events.map(async (event) => {
@@ -61,7 +61,7 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
               issueDate: new Date(Number(certDetails.issueDate) * 1000).toLocaleDateString(),
             };
           }
-          return null; 
+          return null;
         });
 
         const allResults = await Promise.all(certificatePromises);
@@ -76,7 +76,7 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
           await wait(3000);
           handleCloseToast();
         }
-        
+
         setCertificateList(userOwnedCertificates);
 
       } catch (e) {
@@ -88,7 +88,7 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
     };
 
     fetchUserCertificates();
-  }, [contract, userAddress]);
+  }, [contract, userAddress, handleCloseToast]);
 
   const openModal = (tokenId: bigint) => {
     try {
@@ -113,7 +113,7 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
         <main className={styles.mainContent}>
           <div className={styles.contentCard}>
             <h1 className={styles.pageTitle}>My Credentials</h1>
-            
+
             {isLoading ? (
               <p>Loading your certificates...</p>
             ) : certificateList.length > 0 ? (
@@ -136,9 +136,9 @@ export default function RecipientPage({ onLogout, userAddress, contract, header 
       </div>
 
       {isModalOpen && selectedTokenId && (
-        <CertificateDetailModal 
-          userType="recipient" 
-          onClose={closeModal} 
+        <CertificateDetailModal
+          userType="recipient"
+          onClose={closeModal}
           data={data}
         />
       )}

@@ -1,3 +1,4 @@
+import { errorMessage as getErrorMessage } from "../utils/errors";
 /**
  * @file IssuerPage.tsx
  * @description The main user interface for an authenticated user with the "Issuer" role.
@@ -35,8 +36,8 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
   const [isLoading, setIsLoading] = useState(false);
 
   const [isRegistered, setIsRegistered] = useState(false);
-  const [issuerName, setIssuerName] = useState<string>(''); 
-  const [issuerStatus, setIssuerStatus] = useState<bigint>(); 
+  const [issuerName, setIssuerName] = useState<string>('');
+  const [issuerStatus, setIssuerStatus] = useState<bigint>();
   const isFormDisabled = isLoading || issuerStatus !== BigInt(0);
 
   const getButtonStatusClass = () => {
@@ -45,15 +46,15 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
     }
 
     const status = Number(issuerStatus);
-    if (status === 1) { 
+    if (status === 1) {
       return styles['--suspended'];
     }
-    if (status === 2) { 
+    if (status === 2) {
       return styles['--deactivated'];
     }
-    return ''; 
+    return '';
   };
-  
+
   useEffect(() => {
     const getIssuerInfo = async () => {
       if (contract && userAddress) {
@@ -83,7 +84,7 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
       message: '',
       type:"info"  ,
     });
-  
+
   const showToast = (message: string, type:ToastType) => {
     setToast({show:true, message, type})
   }
@@ -106,7 +107,7 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
       handleCloseToast();
       return;
     }
-    
+
     setIsLoading(true);
     showToast("Please confirm the transaction in your wallet.", 'info');
     try{
@@ -121,10 +122,10 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
         await wait(3000);
         handleCloseToast();
         }
-      
+
     } catch (err) {
       console.error(err);
-      const errorMessage = (err as any).reason || (err as Error).message || "An unknown error occurred.";
+      const errorMessage = getErrorMessage(err, "An unknown error occurred.");
       showToast(errorMessage, 'error');
       await wait(3000);
       handleCloseToast();
@@ -155,9 +156,9 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
                 </div>
               </div>
             )}
-          
+
           <div className={styles.formGrid}>
-          
+
             <div className={styles.formColumn}>
               <div className={styles.inputGroup}>
                 <label htmlFor="recipientAddress" className={styles.inputLabel}>Recipient Wallet Address</label>
@@ -273,20 +274,20 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
               )
             }
             <div className={styles.mintButtonContainer}>
-              <button  className={`${styles.mintButton} ${getButtonStatusClass()}`}  onClick={mintCertificate}  
+              <button  className={`${styles.mintButton} ${getButtonStatusClass()}`}  onClick={mintCertificate}
               disabled={!isRegistered || isLoading || issuerStatus !== BigInt(0)} >
                 {!isRegistered && !isLoading ? ("Registration Required") :
-                
-                isLoading ? ("Minting..." ) : 
+
+                isLoading ? ("Minting..." ) :
 
                 issuerStatus === BigInt(0)  && isRegistered ?  (
                     <>
                         <CheckIcon />
                         Mint Certificate
                     </>
-                ) : 
-                
-                issuerStatus === BigInt(1) && isRegistered ? 
+                ) :
+
+                issuerStatus === BigInt(1) && isRegistered ?
                 (
                   <>
                   <AlertTriangleIcon />
@@ -304,7 +305,7 @@ export default function IssuerPage({contract,signer,onLogout,userAddress, header
               }
               </button>
             </div>
-           
+
           </div>
         </div>
       </main>

@@ -1,7 +1,7 @@
 /**
  * @file GetDemoRoleModal.tsx
  * @description A modal component that allows a demo user to grant themselves
- * a temporary role (Admin or Issuer) to explore the application's features.
+ * a demo role (Admin or Issuer) to explore the application's features.
  */
 
 import { useEffect, useState} from 'react';
@@ -19,24 +19,23 @@ export default function GetDemoRoleModal({
   signer,
   showToast,
 }: HeaderProps) {
-  if(signer == undefined || !showToast){
-    return
-  }
-  
+
+
   const [selectedRole, setSelectedRole] = useState<Roles | null>(null);
 
-  const { isUpdating, changeRole } = useDemoRole(signer);
+  const { isUpdating, changeRole } = useDemoRole(signer ?? null);
 
   const handleSelectRole = (role: Roles) => {
     setSelectedRole(role);
-    if(selectedRole){
+    if (showToast) {
       changeRole(role, showToast);
     }
-      
+
   };
 
+  const canOpen = Boolean(isOpen && signer && showToast);
   useEffect(() => {
-    if (isOpen) {
+    if (canOpen) {
       document.body.style.overflow = 'hidden';
       setSelectedRole(null);
     } else {
@@ -45,9 +44,9 @@ export default function GetDemoRoleModal({
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [canOpen]);
 
-  if (!isOpen) {
+  if (!isOpen || !signer || !showToast) {
     return null;
   }
 
@@ -66,8 +65,8 @@ export default function GetDemoRoleModal({
             Select a role to grant to your connected wallet. You will need to approve the transaction.
           </p>
           <div className={styles.roleOptions}>
-            <button 
-              className={styles.roleButton} 
+            <button
+              className={styles.roleButton}
               onClick={() => handleSelectRole('issuer')}
               disabled={isUpdating}
             >
@@ -76,8 +75,8 @@ export default function GetDemoRoleModal({
                 {isUpdating && selectedRole === 'issuer' ? 'Requesting...' : 'Become an Issuer'}
               </span>
             </button>
-            <button 
-              className={styles.roleButton} 
+            <button
+              className={styles.roleButton}
               onClick={() => handleSelectRole('admin')}
               disabled={isUpdating}
             >
@@ -86,8 +85,8 @@ export default function GetDemoRoleModal({
                 {isUpdating && selectedRole === 'admin' ? 'Requesting...' : 'Become an Admin'}
               </span>
             </button>
-            <button 
-              className={styles.roleButton} 
+            <button
+              className={styles.roleButton}
               onClick={() => handleSelectRole('recipient')}
               disabled={isUpdating}
             >

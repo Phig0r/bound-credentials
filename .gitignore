@@ -1,50 +1,32 @@
-# Dependencies
-/node_modules
-
-# Build artifacts
-/build
-/dist
-/.next
-dist-ssr
-*.local
-
-# Hardhat specific
-/artifacts
-/cache
-/typechain
-/typechain-types
-/coverage
-/coverage.json
-ignition/deployments/chain-31337
-
-# Environment variables
+# Dependencies and generated output, at every package depth
+node_modules/
+dist/
+dist-ssr/
+build/
+artifacts/
+cache/
+typechain/
+typechain-types/
+coverage/
+coverage.json
+*.tsbuildinfo
+# Keep public deployment addresses and journals; ignore reproducible compiler output.
+**/ignition/deployments/**/artifacts/
+**/ignition/deployments/**/build-info/
+**/ignition/deployments/chain-31337/
+# Secrets and local configuration
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Log files
-logs
+.env.*
+!.env.example
+*.env
+*.local
+# Logs, editor state and diagram recovery files
+logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# System files
+.drawio/
+*.drawio.bkp
 .DS_Store
 Thumbs.db
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+.idea/
+.vscode/
 *.sw?
-*.env

@@ -1,11 +1,12 @@
 /**
  * @file types.ts
- * @description Centralized TypeScript type definitions for the CertifyChain application.
+ * @description Centralized TypeScript type definitions for the Bound Credentials application.
  * This file contains shared interfaces and types for smart contract data,
  * component props, and general application state.
 */
 
-import type { CertificateNft, DemoRoleFaucet } from "../../../smart-contracts/typechain-types";
+import type { CertificateNft } from "./contracts/CertificateNft";
+import type { DemoRoleFaucet } from "./contracts/DemoRoleFaucet";
 import type {ethers, BigNumberish } from "ethers";
 
 // --- Web3 & Smart Contract Types ---
@@ -19,7 +20,7 @@ export interface Issuer {
   name: string;
   website: string;
   status: StatusString;
-  registrationDate: string; 
+  registrationDate: string;
 }
 
 export interface CertificateData {

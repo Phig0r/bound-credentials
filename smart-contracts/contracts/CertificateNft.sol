@@ -72,9 +72,9 @@ contract CertificateNft is ERC721, AccessControl {
     * @param _name The official name of the institution.
     * @param _website The official website of the institution.
    */
-   function addIssuer( 
-      address _issuerAddress, 
-      string memory _name, 
+   function addIssuer(
+      address _issuerAddress,
+      string memory _name,
       string memory _website
       ) external onlyRole(ADMIN_ROLE) {
          require(!_issuerExists(_issuerAddress), "Certify: Issuer already exist");

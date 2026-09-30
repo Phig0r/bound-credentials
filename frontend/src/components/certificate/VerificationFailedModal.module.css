@@ -28,13 +28,13 @@
 
 .modalHeader {
   padding: 1rem;
-  background-color: #FEF2F2; 
+  background-color: #FEF2F2;
 }
 
 .headerIcon {
   width: 64px;
   height: 64px;
-  color: #EF4444; 
+  color: #EF4444;
   margin: 0 auto 0.75rem auto;
 }
 
@@ -42,7 +42,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 24px;
   font-weight: 700;
-  color: #EF4444; 
+  color: #EF4444;
 }
 
 .modalBody {

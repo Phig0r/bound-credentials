@@ -8,22 +8,22 @@
   left: 50%;
   transform: translate(-50%, -150%); /* Start off-screen */
   z-index: 2000;
-  
+
   display: flex;
   align-items: center;
   gap: 16px;
-  
+
   padding: 16px 20px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  
+
   /* Make the width dynamic based on content */
   width: fit-content;
   max-width: 90%; /* Ensure it doesn't get too wide on large screens */
 
   color: white;
   font-weight: 500;
-  
+
   /* The smooth slide-in/out transition */
   transition: transform 0.4s ease-in-out;
 }

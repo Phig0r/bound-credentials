@@ -1,6 +1,6 @@
 /**
  * @file LandingPage.tsx
- * @description The main public-facing page for the CertifyChain application.
+ * @description The main public-facing page for the Bound Credentials application.
  * It serves as the entry point for all users, explaining the project's value
  * and providing two primary calls-to-action: connecting a wallet for registered
  * users and a public tool for verifying a certificate's authenticity.
@@ -27,7 +27,7 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [tokenId, setTokenId] =useState<number|null>(null);
   const {data, isLoading, error, fetchAllDetails} = useCertificateData(contract);
-  
+
   const wait = (milliseconds: number | undefined) => new Promise(resolve => setTimeout(resolve, milliseconds));
   const [toast, setToast] = useState<ToastState>({
     show: false,
@@ -62,7 +62,7 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
       if(error){
         setShowErrorModal(true);
       }
-    } 
+    }
   },[isLoading, data, error])
 
   const closeModal = () => {
@@ -74,19 +74,19 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
     <>
     <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast}/>
     <Header isConnected={false} theme ="light" onConnect={onConnect} signer={null}/>
-    
+
     <div className={styles.pageContainer}>
       <main className={styles.mainContent}>
 
         {/* --- Hero Section --- */}
         <section className={styles.heroSection}>
           <h1 className={styles.heroTitle}>
-            Secure, Verifiable Credentials on the Blockchain.
+            Credentials bound to a wallet.
           </h1>
 
           <p className={styles.heroSubtitle}>
             Issue, own, and verify academic and professional certificates
-            instantly with the power of soulbound NFTs.
+            with non-transferable tokens on Sepolia.
           </p>
 
           <div className={styles.heroActions}>
@@ -101,11 +101,11 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
           </h2>
 
           <div className={styles.verificationInputGroup}>
-            
+
             <label htmlFor="certificateId" className={styles.inputLabel}>
               Enter Certificate ID (Token ID)
             </label>
-            
+
             <div className={styles.inputWithButton}>
               <input
                 id="certificateId"
@@ -127,7 +127,7 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
 
         {/* --- How It Works Section --- */}
         <section className={styles.howItWorksSection}>
-          <h2 className={styles.sectionTitle}>A Simple, Secure Process</h2>
+          <h2 className={styles.sectionTitle}>How the Demo Works</h2>
           <div className={styles.featuresGrid}>
 
             <div className={styles.featureCard}>
@@ -161,8 +161,8 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
               </div>
 
               <p className={styles.featureDescription}>
-                Employers and the public can instantly validate any
-                credential's authenticity for free.
+                Look up a credential's issuer, owner, and recorded details.
+                The issuer remains responsible for the claim.
               </p>
             </div>
 
@@ -173,6 +173,6 @@ export default function LandingPage({onConnect, contract}: HeaderProps) {
     {showInfoModal && <CertificateDetailModal userType="verifier" onClose={closeModal} data={data} />}
     {showErrorModal && <VerificationFailedModal onClose={closeModal} />}
     </>
-    
+
   );
 }

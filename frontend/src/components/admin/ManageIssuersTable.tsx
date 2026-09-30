@@ -1,3 +1,4 @@
+import { errorMessage } from "../../utils/errors";
 /**
  * @file ManageIssuersTable.tsx
  * @description A component that displays a comprehensive, searchable table of all
@@ -32,7 +33,7 @@ export default function ManageIssuersTable({ issuerList, isLoading, contract, si
 
   const showToast = (message: string, type: ToastType) => {
     setToast({ show: true, message, type });
-    
+
   };
   const handleCloseToast = () => {
     setToast({ ...toast, show: false });
@@ -63,23 +64,23 @@ export default function ManageIssuersTable({ issuerList, isLoading, contract, si
         return
       }
       const statusMapping = { 'Active': 0, 'Suspended': 1, 'Deactivated': 2 };
-      
+
       const statusAsNumber = statusMapping[newStatus];
 
       const connectedContract = contract.connect(signer);
       const tx = await connectedContract.updateIssuerStatus(selectedIssuer.address, statusAsNumber);
-      
+
       showToast("Transaction submitted. Waiting for confirmation...", 'info');
       await tx.wait();
-      
+
       showToast("Success! Issuer status has been updated.", 'success');
-      onUpdate(); 
+      onUpdate();
       await wait(3000);
       handleCloseToast();
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      showToast(err.reason || "An unknown error occurred.", 'error');
+      showToast(errorMessage(err, "An unknown error occurred."), 'error');
       await wait(3000);
       handleCloseToast();
     } finally {
@@ -91,7 +92,7 @@ export default function ManageIssuersTable({ issuerList, isLoading, contract, si
   return (
     <>
       <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast} />
-      
+
       <div className={styles.tableContainer}>
         {!isLoading && issuerList && issuerList.length > 0 && (
           <header className={styles.tableHeader}>
@@ -130,13 +131,13 @@ export default function ManageIssuersTable({ issuerList, isLoading, contract, si
                 <div>{shortenAddress(issuer.address)}</div>
                 <div>{issuer.registrationDate}</div>
                 <div>
-                  <span className={`${styles.statusCell} ${styles[(issuer.status as any).toLowerCase()]}`}>
+                  <span className={`${styles.statusCell} ${styles[(issuer.status ?? '').toLowerCase()]}`}>
                     {issuer.status}
                   </span>
                 </div>
                 <div>
-                  <button 
-                    className={styles.actionButton} 
+                  <button
+                    className={styles.actionButton}
                     onClick={() => handleOpenModal(issuer)}
                     disabled={issuer.status === 'Deactivated'}
                   >

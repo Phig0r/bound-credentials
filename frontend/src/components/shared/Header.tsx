@@ -10,32 +10,30 @@ import { useState } from 'react';
 import type { HeaderProps, ToastState, ToastType} from '../../types/types';
 import Toast from '../../components/shared/Toast';
 import GetDemoRoleModal from '../../components/shared/GetDemoRoleModal';
-export default function Header({ 
+export default function Header({
   theme,
-  header, 
+  header,
   signer,
-  isConnected, 
-  userAddress, 
-  onConnect, 
-  onLogout 
+  isConnected,
+  userAddress,
+  onConnect,
+  onLogout
 }: HeaderProps) {
-  
+
   const themeClass = theme === 'light' ? styles.lightTheme : styles.darkTheme;
 
-  if(!signer && signer != null){
-      return
-    }
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     const handModalOpen = ()=>{
       setIsModalOpen(true);
     }
     const handModalClose = ()=>{
       setIsModalOpen(false);
     }
-  
+
       const [toast, setToast] = useState<ToastState>({
-  
+
         show: false,
         message: '',
         type:"info"  ,
@@ -46,16 +44,16 @@ export default function Header({
       const handleCloseToast = () => {
         setToast({ ...toast, show: false });
       };
-  
+
 
   return (
     <>
     <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast}/>
     <header className={`${styles.headerContainer} ${themeClass}`}>
       <div className={styles.logoContainer}>
-        <h1 className={styles.logoTitle}>CertifyChain</h1>
+        <h1 className={styles.logoTitle}>Bound Credentials</h1>
         <span className={styles.logoDemoTag}>Demo</span>
-        
+
       </div>
       {isConnected && header && (
         <div className={styles.titleContainer}>
@@ -65,7 +63,7 @@ export default function Header({
           </button>
         </div>
       )}
-     
+
       <div className={styles.userActions}>
         {isConnected ? (
           <>
@@ -84,14 +82,14 @@ export default function Header({
         )}
       </div>
     </header>
-    <GetDemoRoleModal 
-      isOpen={isModalOpen} 
+    <GetDemoRoleModal
+      isOpen={isModalOpen}
       onClose={handModalClose}
       signer={signer}
       showToast={showToast}
     />
     </>
-    
-    
+
+
   );
 }

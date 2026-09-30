@@ -6,7 +6,7 @@
  * manages and passes down shared state and data to its children.
 */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Header from "../components/shared/Header";
 import Toast from '../components/shared/Toast';
@@ -38,11 +38,11 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
   const showToast = (message: string, type: ToastType) => {
     setToast({ show: true, message, type });
   };
-  const handleCloseToast = () => {
-    setToast({ ...toast, show: false });
-  };
-  
-  const fetchAllIssuers = async () => {
+  const handleCloseToast = useCallback(() => {
+    setToast(previous => ({ ...previous, show: false }));
+  }, []);
+
+  const fetchAllIssuers = useCallback(async () => {
       if (!contract) {
         setIsLoading(false);
         return;
@@ -50,12 +50,12 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
 
       setIsLoading(true);
       showToast("Loading trusted issuers from the blockchain...", 'info');
-      
+
 
       try {
         const events = await contract.queryFilter(contract.filters.IssuerAdded(), 0, "latest");
         const issuerAddresses = events.map(event => event.args.issuerAddress);
-  
+
         if (issuerAddresses.length === 0) {
           setIssuerList([]);
           showToast("No issuers have been added to the platform yet.", 'info');
@@ -64,11 +64,11 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
           return;
         }
         const issuerDataPromises = issuerAddresses.map(address => contract.issuers(address));
-      
+
         const issuerStructs = await Promise.all(issuerDataPromises);
         type StatusString = 'Active' | 'Suspended' | 'Deactivated';
         const statusMapping: StatusString[] = ['Active', 'Suspended', 'Deactivated'];
-        
+
         const fullIssuerList = issuerStructs.map((issuer, index) => ({
           address: issuerAddresses[index],
           name: issuer.name,
@@ -90,11 +90,11 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [contract, handleCloseToast]);
 
   useEffect(() => {
     fetchAllIssuers();
-  }, [contract]);
+  }, [fetchAllIssuers]);
 
   const onUpdate = () => {
     fetchAllIssuers();
@@ -118,8 +118,8 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
         });
 
         const certIssuedEvents = await contract.queryFilter(contract.filters.CertificateIssued(), 0, "latest");
-        const recentEvents = certIssuedEvents.slice(-5).reverse(); 
-        
+        const recentEvents = certIssuedEvents.slice(-5).reverse();
+
         const activityPromises = recentEvents.map(async (event) => {
             const certDetails = await contract.getCertificateDetails(event.args.tokenId);
             const issuerDetails = await contract.issuers(certDetails.issuerAddress);
@@ -148,19 +148,19 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
         <Header theme="dark" isConnected={true} userAddress={userAddress} onLogout={onLogout} header={header} signer={signer}/>
         <main className={styles.mainContent}>
           <nav className={styles.navBar}>
-            <button 
+            <button
               className={`${styles.navButton} ${activeView === 'dashboard' ? styles.active : ''}`}
               onClick={() => setActiveView('dashboard')}
             >
               Dashboard
             </button>
-            <button 
+            <button
               className={`${styles.navButton} ${activeView === 'grantRole' ? styles.active : ''}`}
               onClick={() => setActiveView('grantRole')}
             >
               Grant Issuer Role
             </button>
-            <button 
+            <button
               className={`${styles.navButton} ${activeView === 'manageIssuers' ? styles.active : ''}`}
               onClick={() => setActiveView('manageIssuers')}
             >
@@ -178,9 +178,9 @@ export default function AdminPage({ onLogout, userAddress, contract, signer, hea
               />}
             {activeView === 'grantRole' && contract && <GrantRoleForm contract={contract} signer={signer} />}
             {activeView === 'manageIssuers' && (
-              <ManageIssuersTable 
-                issuerList={issuerList} 
-                isLoading={isLoading} 
+              <ManageIssuersTable
+                issuerList={issuerList}
+                isLoading={isLoading}
                 contract={contract}
                 signer={signer}
                 onUpdate={onUpdate}

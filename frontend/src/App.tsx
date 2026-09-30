@@ -6,7 +6,7 @@
  * the appropriate top-level page component.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import AdminPage from "./pages/AdminPage";
 import IssuerPage from "./pages/IssuerPage";
@@ -26,10 +26,10 @@ export default function App() {
   const { walletAddress, signer, connectWallet, disconnectWallet , closingToast} = useWalletConnect();
   const certificateContract = useContract(signer);
   useEffect(()=>{
-   
+
   },[signer]);
-  
-  
+
+
   const [userRole, setUserRole] = useState<'admin' | 'issuer' | 'recipient1' | 'recipient2' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,14 +39,14 @@ export default function App() {
     type: 'info',
   });
 
-  
+
   const showToast = (message: string, type:ToastType) => {
     setToast({show:true, message, type})
   }
 
-    const handleCloseToast = () => {
-    setToast({ ...toast, show: false });
-  };
+    const handleCloseToast = useCallback(() => {
+    setToast(previous => ({ ...previous, show: false }));
+  }, []);
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -61,28 +61,28 @@ export default function App() {
         const issuerRole = await certificateContract.ISSUER_ROLE();
         if (await certificateContract.hasRole(adminRole, walletAddress)) {
           setUserRole('admin');
-          setToast({...toast, message:"Authenticating Admin privileges..."});
+
           showToast("Authenticating Admin privileges...", 'info');
           await wait(3000);
           handleCloseToast();
           await wait(500);
           setIsLoading(false);
-          
-          return; 
+
+          return;
         }
         else if (await certificateContract.hasRole(issuerRole, walletAddress)) {
           setUserRole('issuer');
-          setToast({...toast, message:"Verifying Issuer credentials..."});
+
           showToast("Verifying Issuer credentials...", 'info');
           await wait(3000);
           handleCloseToast();
           await wait(500);
           setIsLoading(false);
-          
-          return; 
+
+          return;
         }else if(await certificateContract.balanceOf(walletAddress) > 0){
           setUserRole("recipient1");
-          setToast({...toast, message:"Loading your personal credentials..."});
+
           showToast("Loading your personal credentials...", 'info');
           await wait(3000);
           handleCloseToast();
@@ -91,7 +91,7 @@ export default function App() {
           return;
         }else{
           setUserRole('recipient2');
-          setToast({...toast, message:"Loading your personal credentials..."});
+
           showToast("Loading your personal credentials...", 'info');
           await wait(3000);
           handleCloseToast();
@@ -99,9 +99,9 @@ export default function App() {
           setIsLoading(false);
           return;
         }
-        
-        
-        
+
+
+
       } catch (error) {
         console.error("Failed to fetch user role:", error);
         setUserRole(null);
@@ -111,19 +111,19 @@ export default function App() {
     };
 
     checkUserRole();
-  }, [certificateContract, walletAddress]); 
+  }, [certificateContract, walletAddress, handleCloseToast]);
 
   if (isLoading) {
     return (<>
         <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast}/>
         <LandingPage onConnect={connectWallet} contract={certificateContract} />
-    </>)  
-    
+    </>)
+
   }
   if (!walletAddress) {
         return (<>
         <LandingPage onConnect={connectWallet} contract={certificateContract} />
-    </>)  
+    </>)
   }
 
   switch (userRole) {

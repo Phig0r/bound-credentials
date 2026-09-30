@@ -1,3 +1,4 @@
+import { errorMessage as getErrorMessage } from "../../utils/errors";
 /**
  * @file GrantRoleForm.tsx
  * @description A component that provides a form for an admin to onboard a new
@@ -28,13 +29,13 @@ export default function GrantRoleForm({contract, signer}:HeaderProps) {
   const [website, setWebsite] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [toast, setToast] = useState<ToastState>({
       show: false,
       message: '',
       type:"info"  ,
     });
-  
+
     const showToast = (message: string, type:ToastType) => {
       setToast({show:true, message, type})
     }
@@ -55,7 +56,7 @@ export default function GrantRoleForm({contract, signer}:HeaderProps) {
       handleCloseToast();
       return;
     }
-    
+
     setIsLoading(true);
     showToast("Please confirm the transaction in your wallet.", 'info');
     try{
@@ -79,7 +80,7 @@ export default function GrantRoleForm({contract, signer}:HeaderProps) {
 
     } catch (err) {
       console.error(err);
-      const errorMessage = (err as any).reason || (err as Error).message || "An unknown error occurred.";
+      const errorMessage = getErrorMessage(err, "An unknown error occurred.");
       showToast("Transaction " + errorMessage, 'error');
       await wait(3000);
       handleCloseToast();
@@ -93,7 +94,7 @@ export default function GrantRoleForm({contract, signer}:HeaderProps) {
    <>
     <Toast show={toast.show} message={toast.message} type={toast.type} onClose={handleCloseToast}/>
     <div className={styles.formContainer}>
-      
+
       <h1 className={styles.pageTitle}>Grant New Issuer Role</h1>
 
       <div className={styles.formGrid}>

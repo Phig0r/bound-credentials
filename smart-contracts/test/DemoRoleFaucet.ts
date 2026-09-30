@@ -26,7 +26,7 @@ describe("DemoRoleFaucet", function(){
       await certificateNft.grantRole(adminRole, await demoRoleFaucet.getAddress());
 
    })
-   
+
    it("Should grant the ISSUER_ROLE to the caller", async function(){
       await demoRoleFaucet.connect(tester).requestIssuerRole();
       const issuerRole = await certificateNft.ISSUER_ROLE();

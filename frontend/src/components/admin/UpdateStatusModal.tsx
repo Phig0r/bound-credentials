@@ -70,7 +70,7 @@ export default function UpdateStatusModal({
                   onChange={() => setSelectedStatus(status)}
                 />
                 <span className={styles.customRadio}></span>
-                <span className={`${styles.statusDot} ${styles[(status as any).toLowerCase()]}`}></span>
+                <span className={`${styles.statusDot} ${styles[(status ?? '').toLowerCase()]}`}></span>
                 <span className={styles.statusLabel}>{status}</span>
                 {currentStatus === status && <span className={styles.currentTag}>(Current)</span>}
               </label>
@@ -82,8 +82,8 @@ export default function UpdateStatusModal({
           <button className={styles.secondaryButton} onClick={onClose} disabled={isUpdating}>
             Cancel
           </button>
-          <button 
-            className={styles.primaryButton} 
+          <button
+            className={styles.primaryButton}
             onClick={handleSubmit}
             disabled={isUpdating}
           >

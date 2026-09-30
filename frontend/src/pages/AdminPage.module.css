@@ -21,7 +21,7 @@
   padding: 0.5rem;
   border-radius: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1rem; 
+  margin-bottom: 1rem;
 }
 
 .navButton {
@@ -30,7 +30,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 500;
-  color: #6B7280; 
+  color: #6B7280;
   padding: 0.75rem 1.5rem;
 
   cursor: pointer;
@@ -38,11 +38,11 @@
 }
 
 .navButton:hover {
-  color: #454a53; 
+  color: #454a53;
 }
 
 .navButton.active {
-  color: #3498DB; 
+  color: #3498DB;
 
   border-bottom: 3px solid #3498DB;
   font-weight: 600;

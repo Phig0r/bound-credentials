@@ -11,13 +11,13 @@ const CertifyModule = buildModule("CertifyModule", (m) => {
   // 3. Read argument "newAdminRole" for the "RoleAdminChanged" event to get the ADMIN_ROLE.
   const adminRole = m.readEventArgument(certificateNft, "RoleAdminChanged", "newAdminRole");
   const defaultAdminRole = ethers.ZeroHash;
-  
+
   // 4. Grant the ADMIN_ROLE to the faucet contract
   //    so it can act as an admin on the main contract's behalf.
   m.call(certificateNft, "grantRole", [adminRole, demoRoleFaucet], {
-    id: "GrantAdminRoleToFaucet", 
+    id: "GrantAdminRoleToFaucet",
   });
-  
+
   m.call(certificateNft, "grantRole", [defaultAdminRole, demoRoleFaucet], {
     id: "GrantDefaultAdminToFaucet",
   });
